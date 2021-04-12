@@ -5,15 +5,6 @@
 #include <sstream>
 #include <iostream>
 #include "calc.h"
-/*bool onlyAlphabetic (std::string input);
-int main () {
-	if (onlyAlphabetic (std::string ("1bcbdb"))) {
-		std::cout << "true";
-	}
-	std::cout << "false";
-	std::cout << onlyAlphabetic (std::string (".bcbdb"));
-	return 0;
-}*/
 
 std::vector<std::string> tokenize(const std::string &expr) {
         std::vector<std::string> vec;
@@ -42,7 +33,10 @@ bool onlyAlphabetic (std::string input) {
 }
 
 bool onlyNumeric (std::string input) {
-        return onlyElementsOf(std::string("0123456789"), input);
+        if (input.at(0) == '-') {
+		input = input.substr (1);
+	}
+	return onlyElementsOf(std::string("0123456789"), input);
 }
 
 bool onlyEquals (std::string input) {

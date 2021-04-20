@@ -2,8 +2,31 @@
 #include "csapp.h"
 #include "calc.h"
 #include <string.h>
-
+#include <pthread.h> 
+#include <stdio.h>
 #define LINEBUF_SIZE 1024
+
+int chat_with_client(struct Calc *calc, int infd, int outfd);
+
+//data strcture representing a client connection
+struct ConnInfo {
+	int clientfd;
+	int serverfd;
+	struct Calc *calc;
+};
+
+void *worker(void *arg) {
+	struct ConnInfo *info = arg;
+
+	pthread_detach(pthread_self());
+	
+	int result = chat_with_client(info->calc, info->clientfd, info->serverfd);
+
+	close(info->clientfd);
+	//free(info);
+
+	return result;
+}
 
 void fatal(const char *msg) {
 	fprintf(stderr, "%s\n", msg);
@@ -62,14 +85,21 @@ int main(int argc, char **argv) {
 	if (server_fd < 0) {
 		fatal("Couldn't open server socket\n");
 	}
-
+	
 	int keep_going = 1;
 	struct Calc *calc = calc_create();
 	while (keep_going) {
 		int client_fd = Accept(server_fd, NULL, NULL);
 		if (client_fd > 0) {
-			keep_going = chat_with_client(calc, client_fd , client_fd);
-			close(client_fd);
+			struct ConnInfo *info = malloc(sizeof(struct ConnInfo));
+			info->clientfd = client_fd;
+			info->serverfd = server_fd;
+			info->calc = calc;
+			pthread_t thr_id;
+			if (pthread_create(&thr_id, NULL, worker, info) != 0) {
+				fatal("pthread_create failed");
+			}
+			//keep_going = chat_with_client(calc, client_fd , client_fd);
 		}
 	}
 	close(server_fd);

@@ -5,6 +5,9 @@
 #include <sstream>
 #include <iostream>
 #include "calc.h"
+#include <pthread.h>
+
+long i = 0;
 
 std::vector<std::string> tokenize(const std::string &expr) {
         std::vector<std::string> vec;
@@ -71,6 +74,7 @@ private:
 	bool checkVariable (std::string variable);
 	bool checkEquals (std::string variable);
 	int validateCommand (std::vector<std::string> tokens);
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 };
 
 extern "C" struct Calc *calc_create(void) {
@@ -96,21 +100,29 @@ int Calc::evalExpr(const std::string &expr, int &result) {
 	
 	int caseNumber = validateCommand(tokens);
 	if (caseNumber == 1) {
+		pthread_mutex_lock(&mutex);
 		result = operandValue(tokens.at(0));
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 	else if (caseNumber == 2 ) {
+		pthread_mutex_lock(&mutex);
 		result = evaluate(operandValue(tokens.at(0)), operandValue(tokens.at(2)), tokens.at(1));
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 	else if (caseNumber == 3) {
+		pthread_mutex_lock(&mutex);
 		result = operandValue(tokens.at(2));
 		variableTable[tokens.at(0)] = result;
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 	else if (caseNumber == 4) {
+		pthread_mutex_lock(&mutex);
 		result = evaluate(operandValue(tokens.at(2)), operandValue(tokens.at(4)), tokens.at(3));
 		variableTable[tokens.at(0)] = result;
+		pthread_mutex_unlock(&mutex);
 		return 1;
 	}
 

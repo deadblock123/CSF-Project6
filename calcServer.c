@@ -20,10 +20,10 @@ void *worker(void *arg) {
 
 	pthread_detach(pthread_self());
 	
-	int result = chat_with_client(info->calc, info->clientfd, info->serverfd);
+	int result = chat_with_client(info->calc, info->clientfd, info->clientfd);
 
 	close(info->clientfd);
-	//free(info);
+	free(info);
 
 	return result;
 }

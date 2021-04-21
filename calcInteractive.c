@@ -28,6 +28,7 @@ int main(void) {
 void chat_with_client(struct Calc *calc, int infd, int outfd) {
 	rio_t in;
 	char linebuf[LINEBUF_SIZE];
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	/* wrap standard input (which is file descriptor 0) */
 	rio_readinitb(&in, infd);
@@ -49,7 +50,7 @@ void chat_with_client(struct Calc *calc, int infd, int outfd) {
 		} else {
 			/* process input line */
 			int result;
-			if (calc_eval(calc, linebuf, &result) == 0) {
+			if (calc_eval(calc, linebuf, &result, &mutex) == 0) {
 				/* expression couldn't be evaluated */
 				rio_writen(outfd, "Error\n", 6);
 			} else {

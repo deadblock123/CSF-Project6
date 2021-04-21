@@ -3,12 +3,12 @@
 # dependencies for calc.o according to whether you implemented
 # the calculator in C or C++.
 
-PROGRAMS = calcTest calcInteractive calcServer
+PROGRAMS = calcInteractive calcServer
 CC = gcc
-CFLAGS = -g -Wall -Wextra -pedantic -std=gnu11
+CFLAGS = -g -Wall -Wextra -pedantic -std=gnu11 -pthread
 
 CXX = g++
-CXXFLAGS = -D__USE_POSIX -g -Wall -Wextra -pedantic -std=gnu++11
+CXXFLAGS = -D__USE_POSIX -g -Wall -Wextra -pedantic -std=gnu++11 -pthread
 
 .PHONY : solution.zip clean
 
@@ -25,9 +25,6 @@ all : $(PROGRAMS)
 solution.zip :
 	zip -9r solution.zip *.c *.cpp *.h Makefile README
 
-calcTest : calcTest.o calc.o tctest.o
-	$(CXX) -o $@ calcTest.o calc.o tctest.o
-
 calcInteractive : calcInteractive.o calc.o csapp.o
 	$(CXX) -o $@ calcInteractive.o calc.o csapp.o -lpthread
 
@@ -42,10 +39,6 @@ calc.o : calc.cpp calc.h
 
 # This one is appropriate if you used C for the calculator implementation
 #calc.o : calc.c calc.h
-
-calcTest.o : calcTest.c tctest.h
-
-tctest.o : tctest.c tctest.h
 
 calcInteractive.o : calcInteractive.c calc.h csapp.h
 

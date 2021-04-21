@@ -20,7 +20,7 @@ extern "C" {
  */
 struct Calc *calc_create(void);
 void calc_destroy(struct Calc *calc);
-int calc_eval(struct Calc *calc, const char *expr, int *result);
+int calc_eval(struct Calc *calc, const char *expr, int *result, pthread_mutex_t * mutex);
 
 #ifdef __cplusplus
 }

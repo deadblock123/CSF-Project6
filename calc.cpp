@@ -61,7 +61,7 @@ private:
 public:
 	Calc();
 	~Calc();
-	int evalExpr(const std::string &expr, int &result);
+	int evalExpr(const std::string &expr, int &result, pthread_mutex_t * mutex);
 
 private:
 	int evaluate (int left, int right, std::string op);
@@ -81,8 +81,8 @@ extern "C" void calc_destroy(struct Calc *calc) {
 	delete calc;
 }
 
-extern "C" int calc_eval(struct Calc *calc, const char *expr, int *result) {
-	return calc->evalExpr(expr, *result);
+extern "C" int calc_eval(struct Calc *calc, const char *expr, int *result, pthread_mutex_t * mutex) {
+	return calc->evalExpr(expr, *result, mutex);
 }
 
 Calc::Calc() {
@@ -91,7 +91,7 @@ Calc::Calc() {
 Calc::~Calc() {
 }
 
-int Calc::evalExpr(const std::string &expr, int &result) {
+int Calc::evalExpr(const std::string &expr, int &result, pthread_mutex_t * mutex) {
 	std::vector<std::string> tokens = tokenize(expr);
 	
 	int caseNumber = validateCommand(tokens);
@@ -105,12 +105,16 @@ int Calc::evalExpr(const std::string &expr, int &result) {
 	}
 	else if (caseNumber == 3) {
 		result = operandValue(tokens.at(2));
+		pthread_mutex_lock(mutex);
 		variableTable[tokens.at(0)] = result;
+		pthread_mutex_unlock(mutex);
 		return 1;
 	}
 	else if (caseNumber == 4) {
 		result = evaluate(operandValue(tokens.at(2)), operandValue(tokens.at(4)), tokens.at(3));
+		pthread_mutex_lock(mutex);
 		variableTable[tokens.at(0)] = result;
+		pthread_mutex_unlock(mutex);
 		return 1;
 	}
 

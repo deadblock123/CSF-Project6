@@ -7,6 +7,7 @@
 #define LINEBUF_SIZE 1024
 
 int chat_with_client(struct Calc *calc, int infd, int outfd);
+int keep_going = 1;
 
 //data strcture representing a client connection
 struct ConnInfo {
@@ -21,11 +22,14 @@ void *worker(void *arg) {
 	pthread_detach(pthread_self());
 	
 	int result = chat_with_client(info->calc, info->clientfd, info->clientfd);
-
 	close(info->clientfd);
 	free(info);
 
-	return result;
+	if (result == 0) {
+		keep_going = 0;
+	}
+	
+	return NULL;
 }
 
 void fatal(const char *msg) {
@@ -86,10 +90,15 @@ int main(int argc, char **argv) {
 		fatal("Couldn't open server socket\n");
 	}
 	
-	int keep_going = 1;
 	struct Calc *calc = calc_create();
 	while (keep_going) {
 		int client_fd = Accept(server_fd, NULL, NULL);
+		
+		if (keep_going == 0) {
+			close(client_fd);
+			break;
+		}
+
 		if (client_fd > 0) {
 			struct ConnInfo *info = malloc(sizeof(struct ConnInfo));
 			info->clientfd = client_fd;

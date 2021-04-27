@@ -1,0 +1,16 @@
+Contributions:
+Jacob Lopez and Elmi Moallin both worked on the Calc class and the actual
+server implementation equally. 
+
+Data Syncronization:
+We want to insure that data is not being accessed and modified at the same time.
+We first note that all threads use the same instance of a Calc object. 
+We also note that every instance of a Calc object only has one relevant
+piece of data: the variableTable. Therefore, we decided to give our Calc
+class a mutex field. We then decided to lock and unlock the mutex before 
+and after there was a possibility of accessing or modifying the variableTable.
+We note that since there is only one function capable of doing this 
+(operandValue()) we only had to lock and unlock the mutex before and 
+after this is called in the evalExpr() method. This way, we minimize
+the size of the critical area has much as possible while also insuring
+that multiple threads won't access/modify the variableTable at the same time. 
